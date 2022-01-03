@@ -118,4 +118,8 @@ class AccountControllerTest {
         // controller 에서 메일 안보내면 테스트 깨짐
         then(javaMailSender).should().send(any(SimpleMailMessage.class));
     }
+
+
+
+
 }
