@@ -1,13 +1,14 @@
 package com.studyolle.account;
 
 import com.studyolle.domain.Account;
+import com.studyolle.settings.form.Notifications;
+import com.studyolle.settings.form.Profile;
 import lombok.RequiredArgsConstructor;
+import org.modelmapper.ModelMapper;
 import org.springframework.mail.SimpleMailMessage;
 import org.springframework.mail.javamail.JavaMailSender;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
-import org.springframework.security.core.Authentication;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
-import org.springframework.security.core.context.SecurityContext;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.userdetails.UserDetailsService;
@@ -26,6 +27,7 @@ public class AccountService implements UserDetailsService {
     private final AccountRepository accountRepository;
     private final JavaMailSender javaMailSender;
     private final PasswordEncoder passwordEncoder;
+    private final ModelMapper modelMapper;
 
     //@Transactional // 트랜잭션 persist 상태를 유지 하기위해
     public Account processNewAccount(SignUpForm signUpForm) { //리팩토링
@@ -95,6 +97,43 @@ public class AccountService implements UserDetailsService {
 
     public void completeSignUp(Account account) {
         account.completeSignUp();
+        login(account);
+    }
+
+
+    // account 객체가 deteched 상태라 변경 안됌
+    public void updateProfile(Account account, Profile profile) {
+        modelMapper.map(profile, account); // account 에있는 데이터가 프로필 데이터로 변경
+        accountRepository.save(account);
+//        account.setUrl(profile.getUrl());
+//        account.setOccupation(profile.getOccupation());
+//        account.setLocation(profile.getLocation());
+//        account.setBio(profile.getBio());
+//        account.setProfileImage(profile.getProfileImage());
+//        accountRepository.save(account); //그래서 머지를 시켜줘야 함
+    }
+    // account 객체가 deteched 상태라 변경 안됌
+    public void updatePassword(Account account, String newPassword) {
+        account.setPassword(passwordEncoder.encode(newPassword));
+        accountRepository.save(account); //Transactional
+    }
+
+    public void updateNotifications(Account account, Notifications notifications) {
+
+        modelMapper.map(notifications, account);
+//        account.setStudyCreatedByWeb(notifications.isStudyCreatedByWeb());
+//        account.setStudyCreatedByEmail(notifications.isStudyCreatedByEmail());
+//        account.setStudyUpdatedByWeb(notifications.isStudyUpdatedByWeb());
+//        account.setStudyUpdatedByEmail(notifications.isStudyUpdatedByEmail());
+//        account.setStudyEnrollmentResultByEmail(notifications.isStudyEnrollmentResultByEmail());
+//        account.setStudyEnrollmentResultByWeb(notifications.isStudyEnrollmentResultByWeb());
+        accountRepository.save(account);
+    }
+
+    public void updateNickname(Account account, String nickname) {
+        //@current user account 라 변경감지를 인지 하지 않아 save 를 해줘야함
+        account.setNickname(nickname);
+        accountRepository.save(account);
         login(account);
     }
 }
