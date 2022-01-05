@@ -2,8 +2,10 @@ package com.studyolle.account;
 
 import com.studyolle.domain.Account;
 import com.studyolle.domain.Tag;
+import com.studyolle.domain.Zone;
 import com.studyolle.settings.form.Notifications;
 import com.studyolle.settings.form.Profile;
+import com.studyolle.zone.ZoneRepository;
 import lombok.RequiredArgsConstructor;
 import org.modelmapper.ModelMapper;
 import org.springframework.mail.SimpleMailMessage;
@@ -18,6 +20,7 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import javax.validation.Valid;
 import java.util.List;
 import java.util.Optional;
 import java.util.Set;
@@ -31,27 +34,30 @@ public class AccountService implements UserDetailsService {
     private final JavaMailSender javaMailSender;
     private final PasswordEncoder passwordEncoder;
     private final ModelMapper modelMapper;
+    private final ZoneRepository zoneRepository;
 
     //@Transactional // 트랜잭션 persist 상태를 유지 하기위해
     public Account processNewAccount(SignUpForm signUpForm) { //리팩토링
         Account newAccount = saveNewAccount(signUpForm); //detached 왜냐 트랜잭션 을 벗어났기 때문에
-        newAccount.generateEmailCheckToken();
         sendSignUpConfirmEmail(newAccount);
         return newAccount;
     }
 
 
-    private Account saveNewAccount(SignUpForm signUpForm) {
-        // TODO 회원 가입 처리
-        Account account = Account.builder()
-                .email(signUpForm.getEmail())
-                .nickname(signUpForm.getNickname())
-                .password(passwordEncoder.encode(signUpForm.getPassword()))
-                .emailVerified(false)
-                .studyCreatedByWeb(true)
-                .studyEnrollmentResultByWeb(true)
-                .studyUpdatedByWeb(true)
-                .build();
+    private Account saveNewAccount(@Valid SignUpForm signUpForm) {
+        signUpForm.setPassword(passwordEncoder.encode(signUpForm.getPassword()));
+        Account account = modelMapper.map(signUpForm, Account.class);
+        account.generateEmailCheckToken();
+//        // TODO 회원 가입 처리
+//        Account account = Account.builder()
+//                .email(signUpForm.getEmail())
+//                .nickname(signUpForm.getNickname())
+//                .password(passwordEncoder.encode(signUpForm.getPassword()))
+//                .emailVerified(false)
+//                .studyCreatedByWeb(true)
+//                .studyEnrollmentResultByWeb(true)
+//                .studyUpdatedByWeb(true)
+//                .build();
         Account newAccount = accountRepository.save(account);
         return newAccount;
     }
@@ -164,5 +170,20 @@ public class AccountService implements UserDetailsService {
     public void removeTag(Account account, Tag tag) {
         Optional<Account> byId = accountRepository.findById(account.getId());
         byId.ifPresent(a -> a.getTags().remove(tag));
+    }
+
+    public Set<Zone> getZones(Account account) {
+        Optional<Account> byId = accountRepository.findById(account.getId());
+        return byId.orElseThrow().getZones();
+    }
+
+    public void addZone(Account account, Zone zone) {
+        Optional<Account> byId = accountRepository.findById(account.getId());
+        byId.ifPresent(a -> a.getZones().add(zone));
+    }
+
+    public void removeZone(Account account, Zone zone) {
+        Optional<Account> byId = accountRepository.findById(account.getId());
+        byId.ifPresent(a -> a.getZones().remove(zone));
     }
 }
