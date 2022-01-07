@@ -170,7 +170,6 @@ public class AccountService implements UserDetailsService {
     }
 
     public void sendLoginLink(Account account) {
-
         Context context = new Context();
         context.setVariable("link","/check-email-token?token="+ account.getEmailCheckToken() +
                 "&email=" + account.getEmail());
@@ -178,10 +177,7 @@ public class AccountService implements UserDetailsService {
         context.setVariable("linkName", "이메일로 로그인하기");
         context.setVariable("message", "로그인 하려면 아래 링크를 링크를 클릭하새요.");
         context.setVariable("host", appProperties.getHost());
-
         String message = templateEngine.process("mail/simple-link", context);
-
-
         EmailMessage emailMessage = EmailMessage.builder()
                 .to(account.getEmail())
                 .subject("스터디 올래, 로그인 링크")

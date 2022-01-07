@@ -10,7 +10,6 @@ import org.springframework.web.bind.annotation.*;
 import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
 import javax.validation.Valid;
-import java.time.LocalDateTime;
 
 @Controller
 @RequiredArgsConstructor
@@ -56,9 +55,6 @@ public class AccountController {
        }
 
        accountService.completeSignUp(account); //open entityManager in view
-
-
-
 
        model.addAttribute("numberOfUser", accountRepository.count());
        model.addAttribute("nickname", account.getNickname());
@@ -130,9 +126,4 @@ public class AccountController {
         accountService.login(account);
         return view;
     }
-
-
-
-
-
 }
