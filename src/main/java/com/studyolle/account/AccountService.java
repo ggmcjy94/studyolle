@@ -52,7 +52,7 @@ public class AccountService implements UserDetailsService {
     //@Transactional // 트랜잭션 persist 상태를 유지 하기위해
     public Account processNewAccount(SignUpForm signUpForm) { //리팩토링
         Account newAccount = saveNewAccount(signUpForm); //detached 왜냐 트랜잭션 을 벗어났기 때문에
-        sendSignUpConfirmEmail(newAccount);
+        sendSignUpConfirmEmail(newAccount); // 해당부분 에서 에러가 나면 db 저장 이 안됌 rollback됌
         return newAccount;
     }
 
@@ -216,5 +216,13 @@ public class AccountService implements UserDetailsService {
     public void removeZone(Account account, Zone zone) {
         Optional<Account> byId = accountRepository.findById(account.getId());
         byId.ifPresent(a -> a.getZones().remove(zone));
+    }
+
+    public Account getAccount(String nickname) {
+        Account account = accountRepository.findByNickname(nickname);
+        if (nickname == null) {
+            throw new IllegalArgumentException(nickname  + "에 해당하는 사용자가 없습니다.");
+        }
+        return account;
     }
 }
