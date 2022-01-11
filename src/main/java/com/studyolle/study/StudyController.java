@@ -64,4 +64,18 @@ public class StudyController {
         model.addAttribute(study);
         return "study/members";
     }
+
+    @GetMapping("/study/{path}/join") //원래는 Post 로 해야됌 객체에 상태 가 변하기 때문 하지만 강의에서는 form css 가 엇나가서 get 으로 함
+    public String joinStudy(@CurrentUser Account account, @PathVariable String path) {
+        Study study = studyRepository.findStudyWithMembersByPath(path);
+        studyService.addMember(study, account);
+        return "redirect:/study/" + study.getEncodedPath() + "/members";
+    }
+
+    @GetMapping("/study/{path}/leave") //원래는 Post 로 해야됌 객체에 상태 가 변하기 때문 하지만 강의에서는 form css 가 엇나가서 get 으로 함
+    public String leaveStudy(@CurrentUser Account account, @PathVariable String path) {
+        Study study = studyRepository.findStudyWithMembersByPath(path);
+        studyService.removeMember(study, account);
+        return "redirect:/study/" + study.getEncodedPath() + "/members";
+    }
 }
