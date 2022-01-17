@@ -32,6 +32,7 @@ public class EventService {
     public void updateEvent(Event event, EventForm eventForm) {
         modelMapper.map(eventForm , event); //event.setDescription(eventForm.getDescription());
         //TODO 모집 인원을 늘린 선착순 모임의 경우에, 자동으로 추가 인원의 참가 신청을 확정 상태로 변경해야 한다.
+        event.acceptWaitingList();
     }
 
     public void deleteEvent(Event event) {
@@ -54,11 +55,9 @@ public class EventService {
         event.removeEnrollment(enrollment);
         enrollmentRepository.delete(enrollment);
 
-        if (event.isAbleToAcceptWaitingEnrollment()) {
-            Enrollment enrollmentToAccept = event.getTheFirstWaitingEnrollment();
-            if (enrollmentToAccept != null) {
-                enrollmentToAccept.setAccepted(true);
-            }
-        }
+        event.acceptNextWaitingEnrollment();
+
+
+
     }
 }
