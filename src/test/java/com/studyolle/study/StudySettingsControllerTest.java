@@ -22,7 +22,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 class StudySettingsControllerTest extends StudyControllerTest {
 
     @Test
-    @WithAccount("hyunseok")
+    @WithAccount("keesun")
     @DisplayName("스터디 소개 수정 폼 조회 - 실패 (권한 없는 유저)")
     void updateDescriptionForm_fail() throws Exception {
         Account whiteship = createAccount("whiteship");
@@ -33,11 +33,11 @@ class StudySettingsControllerTest extends StudyControllerTest {
     }
 
     @Test
-    @WithAccount("hyunseok")
+    @WithAccount("keesun")
     @DisplayName("스터디 소개 수정 폼 조회 - 성공")
     void updateDescriptionForm_success() throws Exception {
-        Account hyunseok = accountRepository.findByNickname("hyunseok");
-        Study study = createStudy("test-study", hyunseok);
+        Account keesun = accountRepository.findByNickname("keesun");
+        Study study = createStudy("test-study", keesun);
 
         mockMvc.perform(get("/study/" + study.getPath() + "/settings/description"))
                 .andExpect(status().isOk())
@@ -48,11 +48,11 @@ class StudySettingsControllerTest extends StudyControllerTest {
     }
 
     @Test
-    @WithAccount("hyunseok")
+    @WithAccount("keesun")
     @DisplayName("스터디 소개 수정 - 성공")
     void updateDescription_success() throws Exception {
-        Account hyunseok = accountRepository.findByNickname("hyunseok");
-        Study study = createStudy("test-study", hyunseok);
+        Account keesun = accountRepository.findByNickname("keesun");
+        Study study = createStudy("test-study", keesun);
 
         String settingsDescriptionUrl = "/study/" + study.getPath() + "/settings/description";
         mockMvc.perform(post(settingsDescriptionUrl)
@@ -65,11 +65,11 @@ class StudySettingsControllerTest extends StudyControllerTest {
     }
 
     @Test
-    @WithAccount("hyunseok")
+    @WithAccount("keesun")
     @DisplayName("스터디 소개 수정 - 실패")
     void updateDescription_fail() throws Exception {
-        Account hyunseok = accountRepository.findByNickname("hyunseok");
-        Study study = createStudy("test-study", hyunseok);
+        Account keesun = accountRepository.findByNickname("keesun");
+        Study study = createStudy("test-study", keesun);
 
         String settingsDescriptionUrl = "/study/" + study.getPath() + "/settings/description";
         mockMvc.perform(post(settingsDescriptionUrl)
