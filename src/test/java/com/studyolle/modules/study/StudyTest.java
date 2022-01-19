@@ -1,5 +1,6 @@
 package com.studyolle.modules.study;
 
+import com.studyolle.infra.AbstractContainerBaseTest;
 import com.studyolle.modules.account.Account;
 import com.studyolle.modules.account.UserAccount;
 import org.junit.jupiter.api.BeforeEach;
@@ -9,7 +10,7 @@ import org.junit.jupiter.api.Test;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
-class StudyTest {
+class StudyTest  extends AbstractContainerBaseTest {
 
     Study study;
     Account account;
