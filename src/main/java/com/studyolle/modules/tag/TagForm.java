@@ -1,4 +1,4 @@
-package com.studyolle.modules.account.form;
+package com.studyolle.modules.tag;
 
 import lombok.Data;
 

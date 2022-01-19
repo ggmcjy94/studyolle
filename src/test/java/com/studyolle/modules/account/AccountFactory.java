@@ -5,10 +5,10 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
 @Component
-
+@RequiredArgsConstructor
 public class AccountFactory {
-    @Autowired
-    AccountRepository accountRepository;
+
+    @Autowired AccountRepository accountRepository;
 
     public Account createAccount(String nickname) {
         Account whiteship = new Account();

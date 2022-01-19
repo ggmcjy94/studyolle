@@ -19,17 +19,15 @@ public class EventService {
     private final ModelMapper modelMapper;
     private final EnrollmentRepository enrollmentRepository;
 
-
     public Event createEvent(Event event, Study study, Account account) {
         event.setCreatedBy(account);
-        event.setCreateDateTimes(LocalDateTime.now());
+        event.setCreatedDateTime(LocalDateTime.now());
         event.setStudy(study);
         return eventRepository.save(event);
     }
 
     public void updateEvent(Event event, EventForm eventForm) {
-        modelMapper.map(eventForm , event); //event.setDescription(eventForm.getDescription());
-        //TODO 모집 인원을 늘린 선착순 모임의 경우에, 자동으로 추가 인원의 참가 신청을 확정 상태로 변경해야 한다.
+        modelMapper.map(eventForm, event);
         event.acceptWaitingList();
     }
 
@@ -38,7 +36,7 @@ public class EventService {
     }
 
     public void newEnrollment(Event event, Account account) {
-        if (!enrollmentRepository.existsByEventAndAccount(event,account)) {
+        if (!enrollmentRepository.existsByEventAndAccount(event, account)) {
             Enrollment enrollment = new Enrollment();
             enrollment.setEnrolledAt(LocalDateTime.now());
             enrollment.setAccepted(event.isAbleToAcceptWaitingEnrollment());
@@ -49,7 +47,7 @@ public class EventService {
     }
 
     public void cancelEnrollment(Event event, Account account) {
-        Enrollment enrollment = enrollmentRepository.findByEventAndAccount(event,account);
+        Enrollment enrollment = enrollmentRepository.findByEventAndAccount(event, account);
         if (!enrollment.isAttended()) {
             event.removeEnrollment(enrollment);
             enrollmentRepository.delete(enrollment);
@@ -71,6 +69,5 @@ public class EventService {
 
     public void cancelCheckInEnrollment(Enrollment enrollment) {
         enrollment.setAttended(false);
-
     }
 }

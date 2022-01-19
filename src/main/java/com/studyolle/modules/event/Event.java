@@ -11,6 +11,7 @@ import lombok.Setter;
 
 import javax.persistence.*;
 import java.time.LocalDateTime;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -20,20 +21,17 @@ import java.util.stream.Collectors;
         attributeNodes = @NamedAttributeNode("enrollments")
 )
 @Entity
-@Getter @Setter
-@EqualsAndHashCode(of = "id")
-@NoArgsConstructor
+@Getter @Setter @EqualsAndHashCode(of = "id")
 public class Event {
 
-    @Id
-    @GeneratedValue
+    @Id @GeneratedValue
     private Long id;
 
-    @ManyToOne //study 엔티티 에서는 참조 안함 그러므로 event 내에서 Study 참조 할수 밖에 없음
-    private Study study;
+    @ManyToOne
+    private Study study;//study 엔티티 에서는 참조 안함 그러므로 event 내에서 Study 참조 할수 밖에 없음
 
-    @ManyToOne //Account 엔티티 에서는 참조 안함 그러므로 event 내에서 Account 참조 할수 밖에 없음
-    private Account createdBy;
+    @ManyToOne
+    private Account createdBy; //Account 엔티티 에서는 참조 안함 그러므로 event 내에서 Account 참조 할수 밖에 없음
 
     @Column(nullable = false)
     private String title;
@@ -42,7 +40,7 @@ public class Event {
     private String description;
 
     @Column(nullable = false)
-    private LocalDateTime createDateTimes;
+    private LocalDateTime createdDateTime;
 
     @Column(nullable = false)
     private LocalDateTime endEnrollmentDateTime;
@@ -53,14 +51,15 @@ public class Event {
     @Column(nullable = false)
     private LocalDateTime endDateTime;
 
+    @Column
     private Integer limitOfEnrollments;
 
     @OneToMany(mappedBy = "event")
-    private List<Enrollment> enrollments;
+    @OrderBy("enrolledAt")
+    private List<Enrollment> enrollments = new ArrayList<>();
 
     @Enumerated(EnumType.STRING)
     private EventType eventType;
-
 
     public boolean isEnrollableFor(UserAccount userAccount) {
         return isNotClosed() && !isAttended(userAccount) && !isAlreadyEnrolled(userAccount);
@@ -71,7 +70,7 @@ public class Event {
     }
 
     private boolean isNotClosed() {
-        return this.endEnrollmentDateTime.isAfter(LocalDateTime.now()); //해당 객체보다 지난 시간
+        return this.endEnrollmentDateTime.isAfter(LocalDateTime.now());
     }
 
     public boolean isAttended(UserAccount userAccount) {
@@ -81,14 +80,7 @@ public class Event {
                 return true;
             }
         }
-        return false;
-    }
 
-    private boolean isAlreadyEnrolled(UserAccount userAccount) {
-        Account account = userAccount.getAccount();
-        for (Enrollment e : this.enrollments) {
-            return true;
-        }
         return false;
     }
 
@@ -96,6 +88,15 @@ public class Event {
         return this.limitOfEnrollments - (int) this.enrollments.stream().filter(Enrollment::isAccepted).count();
     }
 
+    private boolean isAlreadyEnrolled(UserAccount userAccount) {
+        Account account = userAccount.getAccount();
+        for (Enrollment e : this.enrollments) {
+            if (e.getAccount().equals(account)) {
+                return true;
+            }
+        }
+        return false;
+    }
 
     public long getNumberOfAcceptedEnrollments() {
         return this.enrollments.stream().filter(Enrollment::isAccepted).count();
@@ -103,11 +104,7 @@ public class Event {
 
     public void addEnrollment(Enrollment enrollment) {
         this.enrollments.add(enrollment);
-        enrollment.setEvent(this); // 이거 안해주면 연관관계 안맺어짐 왜냐하면 enrollment 가 관계의 주인 이기 때문
-    }
-
-    public boolean isAbleToAcceptWaitingEnrollment() {
-        return this.eventType == EventType.FCFS && this.limitOfEnrollments > this.getNumberOfAcceptedEnrollments();
+        enrollment.setEvent(this);// 이거 안해주면 연관관계 안맺어짐 왜냐하면 enrollment 가 관계의 주인 이기 때문
     }
 
     public void removeEnrollment(Enrollment enrollment) {
@@ -115,23 +112,8 @@ public class Event {
         enrollment.setEvent(null);
     }
 
-
-    public void acceptNextWaitingEnrollment() {
-        if (this.isAbleToAcceptWaitingEnrollment()) {
-            Enrollment enrollmentToAccept = this.getTheFirstWaitingEnrollment();
-            if (enrollmentToAccept != null) {
-                enrollmentToAccept.setAccepted(true);
-            }
-        }
-    }
-
-    private Enrollment getTheFirstWaitingEnrollment() {
-        for (Enrollment e : enrollments) {
-            if (!e.isAccepted()) {
-                return e;
-            }
-        }
-        return null;
+    public boolean isAbleToAcceptWaitingEnrollment() {
+        return this.eventType == EventType.FCFS && this.limitOfEnrollments > this.getNumberOfAcceptedEnrollments();
     }
 
     public boolean canAccept(Enrollment enrollment) {
@@ -159,9 +141,26 @@ public class Event {
             int numberToAccept = (int) Math.min(this.limitOfEnrollments - this.getNumberOfAcceptedEnrollments(), waitingList.size());
             waitingList.subList(0, numberToAccept).forEach(e -> e.setAccepted(true));
         }
-
     }
 
+    public void acceptNextWaitingEnrollment() {
+        if (this.isAbleToAcceptWaitingEnrollment()) {
+            Enrollment enrollmentToAccept = this.getTheFirstWaitingEnrollment();
+            if (enrollmentToAccept != null) {
+                enrollmentToAccept.setAccepted(true);
+            }
+        }
+    }
+
+    private Enrollment getTheFirstWaitingEnrollment() {
+        for (Enrollment e : this.enrollments) {
+            if (!e.isAccepted()) {
+                return e;
+            }
+        }
+
+        return null;
+    }
 
     public void accept(Enrollment enrollment) {
         if (this.eventType == EventType.CONFIRMATIVE

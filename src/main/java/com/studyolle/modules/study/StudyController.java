@@ -6,9 +6,9 @@ import com.studyolle.modules.study.form.StudyForm;
 import com.studyolle.modules.study.validator.StudyFormValidator;
 import lombok.RequiredArgsConstructor;
 import org.modelmapper.ModelMapper;
-import org.modelmapper.internal.Errors;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
+import org.springframework.validation.Errors;
 import org.springframework.web.bind.WebDataBinder;
 import org.springframework.web.bind.annotation.*;
 
@@ -22,7 +22,7 @@ public class StudyController {
 
     private final StudyRepository studyRepository;
     private final StudyService studyService;
-    private final ModelMapper modelmapper;
+    private final ModelMapper modelMapper;
     private final StudyFormValidator studyFormValidator;
 
     @InitBinder("studyForm")
@@ -38,12 +38,13 @@ public class StudyController {
     }
 
     @PostMapping("/new-study")
-    public String newStudySubmit(@CurrentUser Account account, @Valid @ModelAttribute StudyForm studyForm, Errors errors, Model model) {
+    public String newStudySubmit(@CurrentUser Account account, @Valid StudyForm studyForm, Errors errors, Model model) {
         if (errors.hasErrors()) {
             model.addAttribute(account);
             return "study/form";
         }
-        Study newStudy = studyService.createNewStudy(modelmapper.map(studyForm, Study.class), account);
+
+        Study newStudy = studyService.createNewStudy(modelMapper.map(studyForm, Study.class), account);
         return "redirect:/study/" + URLEncoder.encode(newStudy.getPath(), StandardCharsets.UTF_8);
     }
 
