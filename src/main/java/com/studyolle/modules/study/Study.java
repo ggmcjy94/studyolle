@@ -32,7 +32,8 @@ import java.util.Set;
 
 @NamedEntityGraph(name = "Study.withMembers", attributeNodes = {
         @NamedAttributeNode("members")})
-
+@NamedEntityGraph(name = "Study.withTagsAndZones", attributeNodes = {
+        @NamedAttributeNode("tags"),@NamedAttributeNode("zones")})
 @Entity
 @Getter
 @Setter

@@ -1,11 +1,25 @@
+
+buildscript {
+	ext {
+		queryDslVersion = "5.0.0"
+	}
+}
+
+
 plugins {
 	id 'org.springframework.boot' version '2.6.2'
 	id 'io.spring.dependency-management' version '1.0.11.RELEASE'
-	id 'java'
+
 	/**
 	 * npm build 시 가져가야되는 라이브러리 떄문에 node_modules
 	 */
 	id "com.github.node-gradle.node" version "2.2.3"
+
+	//querydsl 추가
+	id "com.ewerk.gradle.plugins.querydsl" version "1.0.10"
+
+	id 'java'
+
 }
 
 /**
@@ -61,7 +75,7 @@ dependencies {
     compileOnly 'org.projectlombok:lombok'
 	developmentOnly 'org.springframework.boot:spring-boot-devtools'
 
-//	runtimeOnly 'com.h2database:h2'
+	runtimeOnly 'com.h2database:h2'
 
 	runtimeOnly 'org.postgresql:postgresql'
 	annotationProcessor 'org.springframework.boot:spring-boot-configuration-processor'
@@ -74,7 +88,33 @@ dependencies {
 	/* testcontainers */
 	testImplementation "org.testcontainers:postgresql:1.16.2"
 	testImplementation "org.testcontainers:junit-jupiter:1.16.2"
+
+	//querydsl 추가
+	implementation "com.querydsl:querydsl-jpa:${queryDslVersion}"
+	implementation "com.querydsl:querydsl-apt:${queryDslVersion}"
+	// Querydsl 추가 끝
 }
+
+//querydsl 추가 시작
+def querydslDir = "$buildDir/generated/querydsl"
+
+querydsl {
+	jpa = true
+	querydslSourcesDir = querydslDir
+}
+sourceSets {
+	main.java.srcDir querydslDir
+}
+compileQuerydsl{
+	options.annotationProcessorPath = configurations.querydsl
+}
+configurations {
+	compileOnly {
+		extendsFrom annotationProcessor
+	}
+	querydsl.extendsFrom compileClasspath
+}
+//querydsl 추가 끝
 
 test {
 	useJUnitPlatform()
