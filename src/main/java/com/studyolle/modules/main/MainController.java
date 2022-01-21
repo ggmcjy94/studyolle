@@ -2,19 +2,25 @@ package com.studyolle.modules.main;
 
 import com.studyolle.modules.account.CurrentUser;
 import com.studyolle.modules.account.Account;
+import com.studyolle.modules.notification.NotificationRepository;
+import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.GetMapping;
 
 @Controller
+@RequiredArgsConstructor
 public class MainController {
 
+    private final NotificationRepository notificationRepository;
 
     @GetMapping("/")
     public String home(@CurrentUser Account account, Model model) {
         if (account != null) {
             model.addAttribute(account);
         }
+
+
 
         return "index";
     }

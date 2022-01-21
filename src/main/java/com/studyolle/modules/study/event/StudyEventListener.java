@@ -42,8 +42,6 @@ public class StudyEventListener {
     @EventListener
     public void handleStudyCreatedEvent(StudyCreatedEvent studyCreatedEvent) {
         Study study = studyRepository.findStudyWithTagsAndZonesById(studyCreatedEvent.getStudy().getId()); //조회를 할경우 persist 상태
-        Predicate zones = AccountPredicates.findByTagsAndZones(study.getTags(), study.getZones());
-        System.out.println("zones = " + zones);
         Iterable<Account> accounts = accountRepository.findAll(AccountPredicates.findByTagsAndZones(study.getTags(), study.getZones()));
         accounts.forEach(account -> {
             if (account.isStudyCreatedByEmail()) {

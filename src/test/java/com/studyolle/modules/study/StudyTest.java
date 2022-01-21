@@ -2,6 +2,7 @@ package com.studyolle.modules.study;
 
 import com.studyolle.infra.AbstractContainerBaseTest;
 import com.studyolle.modules.account.Account;
+import com.studyolle.modules.account.QAccount;
 import com.studyolle.modules.account.UserAccount;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
@@ -82,5 +83,6 @@ class StudyTest  extends AbstractContainerBaseTest {
         study.addMember(account);
         assertTrue(study.isMember(userAccount));
     }
+
 
 }
