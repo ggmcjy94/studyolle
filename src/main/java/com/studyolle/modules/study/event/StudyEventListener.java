@@ -12,6 +12,7 @@ import com.studyolle.modules.notification.NotificationRepository;
 import com.studyolle.modules.notification.NotificationType;
 import com.studyolle.modules.study.Study;
 import com.studyolle.modules.study.StudyRepository;
+import com.studyolle.modules.tag.Tag;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.context.event.EventListener;
@@ -41,6 +42,7 @@ public class StudyEventListener {
     //알림 기능 @Async
     @EventListener
     public void handleStudyCreatedEvent(StudyCreatedEvent studyCreatedEvent) {
+        System.out.println("studyCreatedEvent.getStudy().getTags() = " + studyCreatedEvent.getStudy().getId());
         Study study = studyRepository.findStudyWithTagsAndZonesById(studyCreatedEvent.getStudy().getId()); //조회를 할경우 persist 상태
         Iterable<Account> accounts = accountRepository.findAll(AccountPredicates.findByTagsAndZones(study.getTags(), study.getZones()));
         accounts.forEach(account -> {
@@ -60,7 +62,7 @@ public class StudyEventListener {
         notification.setTitle(study.getTitle());
         notification.setLink("/study/" + study.getEncodedPath());
         notification.setChecked(false);
-        notification.setCreatedLocalDateTime(LocalDateTime.now());
+        notification.setCreatedDateTime(LocalDateTime.now());
         notification.setMessage(study.getShortDescription());
         notification.setAccount(account); // 받을 사람
         notification.setNotificationType(NotificationType.STUDY_CREATED);

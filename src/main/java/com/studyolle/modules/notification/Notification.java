@@ -13,8 +13,7 @@ import java.time.LocalDateTime;
 @EqualsAndHashCode(of = "id")
 public class Notification {
 
-    @Id
-    @GeneratedValue
+    @Id @GeneratedValue
     private Long id;
 
     private String title;
@@ -28,7 +27,7 @@ public class Notification {
     @ManyToOne
     private Account account;
 
-    private LocalDateTime createdLocalDateTime;
+    private LocalDateTime createdDateTime;
 
     @Enumerated(EnumType.STRING)
     private NotificationType notificationType;

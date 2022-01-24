@@ -19,13 +19,14 @@ import javax.servlet.http.HttpServletResponse;
 public class NotificationInterceptor implements HandlerInterceptor { //설정 해줘야함
 
     private final NotificationRepository notificationRepository;
+
     @Override
     public void postHandle(HttpServletRequest request, HttpServletResponse response, Object handler, ModelAndView modelAndView) throws Exception {
         Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
         if (modelAndView != null && !isRedirectView(modelAndView) && authentication != null && authentication.getPrincipal() instanceof UserAccount) {
-            Account account = ((UserAccount)authentication.getPrincipal()).getAccount();// 현재 유저 정보
+            Account account = ((UserAccount)authentication.getPrincipal()).getAccount();
             long count = notificationRepository.countByAccountAndChecked(account, false);
-            modelAndView.addObject("hasNotification", count > 0); //hasNotification 하나 이상
+            modelAndView.addObject("hasNotification", count > 0);
         }
     }
 

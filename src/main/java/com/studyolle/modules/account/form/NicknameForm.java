@@ -15,4 +15,5 @@ public class NicknameForm {
     private String nickname;
 
 
+
 }
