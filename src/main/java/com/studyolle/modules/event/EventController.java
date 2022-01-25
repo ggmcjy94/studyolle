@@ -33,7 +33,7 @@ public class EventController {
     private final StudyRepository studyRepository;
     private final EnrollmentRepository enrollmentRepository;
 
-    @InitBinder("eventForm")
+    @InitBinder("eventForm") //@Valid
     public void initBinder(WebDataBinder webDataBinder) {
         webDataBinder.addValidators(eventValidator);
     }

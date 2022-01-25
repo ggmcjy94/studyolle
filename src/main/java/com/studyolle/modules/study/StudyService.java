@@ -3,15 +3,20 @@ package com.studyolle.modules.study;
 
 import com.studyolle.modules.account.Account;
 import com.studyolle.modules.study.event.StudyCreatedEvent;
+import com.studyolle.modules.study.event.StudyUpdateEvent;
 import com.studyolle.modules.tag.Tag;
+import com.studyolle.modules.tag.TagRepository;
 import com.studyolle.modules.zone.Zone;
 import com.studyolle.modules.study.form.StudyDescriptionForm;
 import lombok.RequiredArgsConstructor;
+import net.bytebuddy.utility.RandomString;
 import org.modelmapper.ModelMapper;
 import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.security.access.AccessDeniedException;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+
+import java.util.HashSet;
 
 import static com.studyolle.modules.study.form.StudyForm.VALID_PATH_PATTERN;
 
@@ -23,6 +28,10 @@ public class StudyService {
     private final ModelMapper modelMapper;
     private final ApplicationEventPublisher eventPublisher;
 
+
+
+    private final TagRepository tagRepository;
+
     public Study createNewStudy(Study study, Account account) {
         Study newStudy = studyRepository.save(study);
         newStudy.addManager(account);
@@ -31,9 +40,7 @@ public class StudyService {
 
     public Study getStudyToUpdate(Account account, String path) {
         Study study = this.getStudy(path);
-        if (!study.isManagedBy(account)) {
-            throw new AccessDeniedException("해당 기능을 사용할 수 없습니다.");
-        }
+        checkIfManager(account, study);
         return study;
     }
 
@@ -47,6 +54,7 @@ public class StudyService {
 
     public void updateStudyDescription(Study study, StudyDescriptionForm studyDescriptionForm) {
         modelMapper.map(studyDescriptionForm, study);
+        eventPublisher.publishEvent(new StudyUpdateEvent(study, "스터디 소개 수정했습니다."));
     }
 
     public void updateStudyImage(Study study, String image) {
@@ -77,14 +85,14 @@ public class StudyService {
     }
 
     public Study getStudyToUpdateTag(Account account, String path) {
-        Study study = studyRepository.findAccountWithTagsByPath(path);
+        Study study = studyRepository.findStudyWithTagsByPath(path);
         checkIfExistingStudy(path, study);
         checkIfManager(account, study);
         return study;
     }
 
     public Study getStudyToUpdateZone(Account account, String path) {
-        Study study = studyRepository.findAccountWithZonesByPath(path);
+        Study study = studyRepository.findStudyWithZonesByPath(path);
         checkIfExistingStudy(path, study);
         checkIfManager(account, study);
         return study;
@@ -112,20 +120,23 @@ public class StudyService {
 
     public void publish(Study study) { //스터디 공개
         study.publish();
-        this.eventPublisher.publishEvent(new StudyCreatedEvent(study));
+        eventPublisher.publishEvent(new StudyCreatedEvent(study));
     }
 
     public void close(Study study) {
         study.close();
+        eventPublisher.publishEvent(new StudyUpdateEvent(study, "스터디를 종료했습니다."));
+
     }
 
     public void startRecruit(Study study) {
         study.startRecruit();
-
+        eventPublisher.publishEvent(new StudyUpdateEvent(study, "팀원 모집을 시작합니다."));
     }
 
     public void stopRecruit(Study study) {
         study.stopRecruit();
+        eventPublisher.publishEvent(new StudyUpdateEvent(study, "팀원 모집을 중단했습니다."));
     }
 
     public boolean isValidPath(String newPath) {
@@ -169,4 +180,23 @@ public class StudyService {
         checkIfExistingStudy(path, study);
         return study;
     }
+
+
+//    public void generateTestStudies(Account account) {
+//        for (int i=0; i < 30; i++) {
+//            String randomvalue = RandomString.make(5);
+//            Study study = Study.builder()
+//                    .title("테스트 스터디 " + randomvalue)
+//                    .path("test-" + randomvalue)
+//                    .shortDescription("테스트용 스터디 입니다.")
+//                    .fullDescription("test")
+//                    .tags(new HashSet<>())
+//                    .managers(new HashSet<>())
+//                    .build();
+//            study.publish();
+//            Study newStudy = this.createNewStudy(study, account);
+//            Tag jpa = tagRepository.findByTitle("JPA");
+//            newStudy.getTags().add(jpa);
+//        }
+//    }
 }

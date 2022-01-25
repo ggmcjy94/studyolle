@@ -10,7 +10,10 @@ import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.validation.Errors;
 import org.springframework.web.bind.WebDataBinder;
-import org.springframework.web.bind.annotation.*;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.InitBinder;
+import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.PostMapping;
 
 import javax.validation.Valid;
 import java.net.URLEncoder;
@@ -26,7 +29,7 @@ public class StudyController {
     private final StudyFormValidator studyFormValidator;
 
     @InitBinder("studyForm")
-    public void initBinder(WebDataBinder webDataBinder) {
+    public void studyFormInitBinder(WebDataBinder webDataBinder) {
         webDataBinder.addValidators(studyFormValidator);
     }
 
@@ -48,12 +51,11 @@ public class StudyController {
         return "redirect:/study/" + URLEncoder.encode(newStudy.getPath(), StandardCharsets.UTF_8);
     }
 
-
     @GetMapping("/study/{path}")
     public String viewStudy(@CurrentUser Account account, @PathVariable String path, Model model) {
         Study study = studyService.getStudy(path);
         model.addAttribute(account);
-        model.addAttribute(studyRepository.findByPath(path));
+        model.addAttribute(study);
         return "study/view";
     }
 
@@ -65,17 +67,18 @@ public class StudyController {
         return "study/members";
     }
 
-    @GetMapping("/study/{path}/join") //원래는 Post 로 해야됌 객체에 상태 가 변하기 때문 하지만 강의에서는 form css 가 엇나가서 get 으로 함
+    @GetMapping("/study/{path}/join")//원래는 Post 로 해야됌 객체에 상태 가 변하기 때문 하지만 강의에서는 form css 가 엇나가서 get 으로 함
     public String joinStudy(@CurrentUser Account account, @PathVariable String path) {
         Study study = studyRepository.findStudyWithMembersByPath(path);
         studyService.addMember(study, account);
         return "redirect:/study/" + study.getEncodedPath() + "/members";
     }
 
-    @GetMapping("/study/{path}/leave") //원래는 Post 로 해야됌 객체에 상태 가 변하기 때문 하지만 강의에서는 form css 가 엇나가서 get 으로 함
+    @GetMapping("/study/{path}/leave")
     public String leaveStudy(@CurrentUser Account account, @PathVariable String path) {
         Study study = studyRepository.findStudyWithMembersByPath(path);
         studyService.removeMember(study, account);
         return "redirect:/study/" + study.getEncodedPath() + "/members";
     }
+
 }
